@@ -1,4 +1,7 @@
-  .image-upload {
+body{
+  font-family: 'Inter', sans-serif;
+}
+.image-upload {
     border: 100px;
     border-radius: 100px;
   }
@@ -82,4 +85,8 @@
   .submit-task:active{
     background-color: #2A50FF !important;
     border-color: #2A50FF !important;
+  }
+
+  .asterisco-rojo{
+    color: red;
   }

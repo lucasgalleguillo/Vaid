@@ -6,8 +6,10 @@ import { faEye, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
 import Layout from '@/layouts/dashboard/index';
 import BreadcrumbItem from '@/common/BreadcrumbItem';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Form} from 'react-bootstrap';
 import { useRetrieveUserQuery } from '@/redux/features/authApiSlice';
+import { toast } from "react-toastify";
+import { Eye, EyeSlash, Trash } from 'phosphor-react';
 
 const Inventory = ({ headquarterId, addHistoryEntry }) => {
   const [inventory, setInventory] = useState([]);
@@ -32,7 +34,7 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
 
   const loadInventory = () => {
     if (organizationId) {
-      fetch(`http://localhost:8000/api/organization/${organizationId}/inventory/`)
+      fetch(`http://localhost:8000/api/organization/${organizationId}/all-products/`)
         .then(response => response.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -44,7 +46,7 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
           }
         })
         .catch(error => {
-          console.error('Error fetching inventory:', error);
+          console.error('Error al obtener el inventario:', error);
           setInventory([]);
         });
     }
@@ -59,16 +61,14 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
             setHeadquarters(data);
           } 
           else if (data && typeof data === 'object') {
-
             setHeadquarters([data]);
-            console.log(headquarters)
           }
           else {
             console.error('Estructura inesperada de los datos:', data);
           }
         })
         .catch(error => {
-          console.error('Error fetching headquarters:', error);
+          console.error('Error al obtener las sedes:', error);
           setHeadquarters([]);
         });
     }
@@ -80,14 +80,14 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
   }, [organizationId]);
 
   const handleInventoryModalShow = () => {
-    loadHeadquarters(); // Cargar las sedes cuando se abra el modal
+    loadHeadquarters(); 
     setShowInventoryModal(true);
   };
 
   const handleInventoryModalClose = () => setShowInventoryModal(false);
 
   const handleProductModalShow = (product) => {
-    setSelectedProduct(product);  // Pasa el objeto completo del producto
+    setSelectedProduct(product);  
     setShowProductModal(true);
   };
 
@@ -109,12 +109,12 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
       });
 
       if (response.ok) {
-        console.log('Producto borrado con éxito');
+        console.log('Producto eliminado con éxito');
         setInventory(inventory.filter(item => item.id !== selectedProduct.id));
-        addHistoryEntry(`Product "${selectedProduct.name}" deleted by ${user.first_name} ${user.last_name}`);
+        addHistoryEntry(`Producto "${selectedProduct.name}" eliminado por ${user.first_name} ${user.last_name}`);
         setShowDeleteProductModal(false);
       } else {
-        console.error('Error al borrar el producto:', response.status);
+        console.error('Error al eliminar el producto:', response.status);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -126,50 +126,57 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
 
     const formData = new FormData(event.target);
     let expDate = formData.get('expDate');
+    const quantity = parseInt(formData.get('quantity'));
+
+    if (quantity < 0) {
+        toast.error('La cantidad no puede ser negativa.');
+        return;
+    }
+
     if (expDate === '') {
-      expDate = null; // Si la fecha está vacía, establecerla como null
+        expDate = null;  
     }
 
     const data = {
-      name: formData.get('name'),
-      description: formData.get('description'),
-      Category: formData.get('Category'),
-      expDate: expDate,
-      Status: 1,
-      quantity: parseInt(formData.get('quantity')),
-      headquarter: selectedHeadquarter
+        name: formData.get('name'),
+        Category: formData.get('Category'),
+        expDate: expDate,
+        Status: 1,
+        quantity: quantity,
+        headquarter: selectedHeadquarter
     };
 
     try {
-      const response = await fetch(`http://localhost:8000/api/headquarters/${organizationId}/${selectedHeadquarter}/products/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+        const response = await fetch(`http://localhost:8000/api/headquarters/${organizationId}/${selectedHeadquarter}/products/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
 
-      if (response.ok) {
-        const newProduct = await response.json();
-        setInventory([...inventory, newProduct]);
-        addHistoryEntry(`Product "${newProduct.name}" added by ${user.first_name} ${user.last_name}`);
-        setShowInventoryModal(false);
-      } else {
-        const errorData = await response.json();
-        console.error('Error en la respuesta:', response.status, errorData);
-      }
+        if (response.ok) {
+            const newProduct = await response.json();
+            setInventory([...inventory, newProduct]);
+            addHistoryEntry(`Producto "${newProduct.description}" agregado por ${user.first_name} ${user.last_name}`);
+            setShowInventoryModal(false);
+        } else {
+            const errorData = await response.json();
+            console.error('Error en la respuesta:', response.status, errorData);
+        }
     } catch (error) {
-      console.error('Error:', error);
+        console.error('Error:', error);
     }
-  };
+};
+
 
   return (
     <div className="card">
-      <h2>Products</h2>
+      <h2>Productos</h2>
       {inventory.length === 0 ? (
         <>
           <br />
-          <p>No products found in the inventory.</p>
+          <p>No se encontraron productos en el inventario.</p>
           <button className="add-button" onClick={handleInventoryModalShow}>
             <FontAwesomeIcon icon={faPlus} className='hover-button' />
           </button>
@@ -179,26 +186,28 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
           <table className="table">
             <thead>
               <tr>
-                <th className='text-center'>Name</th>
-                <th className='text-center'>Expiration Date</th>
-                <th className='text-center'>Category</th>
-                <th className='text-center'>Status</th>
-                <th className='text-center'>Actions</th>
+                <th className='text-center'>Nombre</th>
+                <th className='text-center'>Cantidad</th>
+                <th className='text-center'>Fecha de Expiración</th>
+                <th className='text-center'>Categoría</th>
+                <th className='text-center'>Estado</th>
+                <th className='text-center'>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {inventory.map(item => (
                 <tr key={item.id}>
                   <td className='text-center'>{item.name}</td>
+                  <td className='text-center'>{item.total_quantity}</td>
                   <td className='text-center'>{item.expDate ? item.expDate : '-'}</td>
                   <td className='text-center'>{item.category_name}</td>
                   <td className='text-center'>{item.status_name}</td>
                   <td className='text-center'>
                     <button className="icon-button" onClick={() => handleProductModalShow(item)}>
-                      <FontAwesomeIcon icon={faEye} className='hover-button' />
+                      <Eye className='hover-button' size={20} weight="bold" />
                     </button>
                     <button className="icon-button" onClick={() => handleDeleteProductModalShow(item)}>
-                      <FontAwesomeIcon icon={faTrash} className='hover-button-trash' />
+                      <Trash className='hover-button-trash' size={20} weight="bold" />
                     </button>
                   </td>
                 </tr>
@@ -213,14 +222,14 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
 
       <Modal show={showInventoryModal} onHide={handleInventoryModalClose} backdropClassName="modal-backdrop" centered size='lg'>
         <Modal.Header closeButton>
-          <Modal.Title>Add Inventory Item</Modal.Title>
+          <Modal.Title>Agregar Producto al Inventario</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={handleAddProductSubmit}>
             <div className='container'>
               <div className='row'>
                 <div className="mb-3 col-md-6">
-                  <label htmlFor="headquarterSelect" className="form-label">Select Headquarter</label>
+                  <label htmlFor="headquarterSelect" className="form-label">Seleccionar Sede</label>
                   <select 
                     className="form-control" 
                     id="headquarterSelect" 
@@ -229,34 +238,42 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
                     onChange={(e) => setSelectedHeadquarter(e.target.value)} 
                     required
                   >
-                    <option value="">Select a Headquarter</option>
+                    <option value="">Selecciona una sede</option>
                     {headquarters.map(hq => (
                       <option key={hq.id} value={hq.id}>{hq.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="mb-3 col-md-6">
-                  <label htmlFor="productName" className="form-label">Product Name</label>
-                  <input type="text" className="form-control" id="productName" name="name" placeholder='Product Name' required />
+                  <label htmlFor="productName" className="form-label">Nombre del Producto</label>
+                  <input type="text" className="form-control" id="productName" name="name" placeholder='Nombre del Producto' required />
                 </div>
               </div>
               <div className='row'>
                 <div className="mb-3 col-md-4">
-                  <label htmlFor="quantity" className="form-label">Quantity</label>
+                  <label htmlFor="quantity" className="form-label">Cantidad</label>
                   <input type="number" className="form-control" id="quantity" name="quantity" placeholder='1' required />
                 </div>
                 <div className="mb-3 col-md-4">
-                  <label htmlFor="expDate" className="form-label">Expiration Date (Optional)</label>
+                  <label htmlFor="expDate" className="form-label">Fecha de Expiración (Opcional)</label>
                   <input type="date" className="form-control" id="expDate" name="expDate" />
                 </div>
                 <div className="mb-3 col-md-4">
-                  <label htmlFor="productType" className="form-label">Category</label>
-                  <input type="text" className="form-control" id="Category" name="Category" placeholder='Product Category' required />
+                <label htmlFor="productType" className="form-label">Categoría</label>
+                  <Form.Control as="select" className="form-select" id="Category" name="Category">
+                                    <option>Ropa</option>
+                                    <option>Comida</option>
+                                    <option>Bebidas</option>
+                                    <option>Medicamentos</option>
+                                    <option>Herramientas</option>
+                                    <option>Otros</option>
+                                    <option>Dinero</option>
+                  </Form.Control>
                 </div>
               </div>
               <div className='d-flex justify-content-center'>
                 <Button variant="primary" type="submit" className='mt-10'>
-                  Add Product
+                  Agregar Producto
                 </Button>
               </div>
             </div>
@@ -266,15 +283,15 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
 
       <Modal show={showProductModal} onHide={handleProductModalClose} backdropClassName="modal-backdrop" centered size='lg'>
         <Modal.Header closeButton>
-          <Modal.Title>Product Details</Modal.Title>
+          <Modal.Title>Detalles del Producto</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedProduct && (
             <div>
-              <p><strong>Name:</strong> {selectedProduct.name}</p>
-              <p><strong>Category:</strong> {selectedProduct.category_name}</p>
-              <p><strong>Status:</strong> {selectedProduct.status_name}</p>
-              <p><strong>Expiration Date:</strong> {selectedProduct.expDate ? selectedProduct.expDate : '-'}</p>
+              <p><strong>Nombre:</strong> {selectedProduct.name}</p>
+              <p><strong>Categoría:</strong> {selectedProduct.category_name}</p>
+              <p><strong>Estado:</strong> {selectedProduct.status_name}</p>
+              <p><strong>Fecha de Expiración:</strong> {selectedProduct.expDate ? selectedProduct.expDate : '-'}</p>
             </div>
           )}
         </Modal.Body>
@@ -282,16 +299,16 @@ const Inventory = ({ headquarterId, addHistoryEntry }) => {
 
       <Modal show={showDeleteProductModal} onHide={handleDeleteProductModalClose} backdropClassName="modal-backdrop" centered size='lg'>
         <Modal.Header closeButton>
-          <Modal.Title>Delete Product</Modal.Title>
+          <Modal.Title>Eliminar Producto</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Are you sure you want to delete the product <strong>{selectedProduct?.name}</strong>?</p>
+          <p>¿Estás seguro de que deseas eliminar el producto <strong>{selectedProduct?.name}</strong>?</p>
           <div className="d-flex justify-content-end">
             <Button variant="secondary" onClick={handleDeleteProductModalClose} className="me-2">
-              Cancel
+              Cancelar
             </Button>
             <Button variant="danger" onClick={handleDeleteProduct}>
-              Delete
+              Eliminar
             </Button>
           </div>
         </Modal.Body>
@@ -325,7 +342,7 @@ const Page = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-        body: JSON.stringify({ description: entry, action: 'Inventory Change', Organization: organizationId}),
+        body: JSON.stringify({ description: entry, action: 'Cambio en Inventario', Organization: organizationId}),
         });
 
         if (response.ok) {
@@ -341,7 +358,7 @@ const Page = () => {
   return (
     <Layout>
       <div className="container">
-        <BreadcrumbItem mainTitle="Resource Management" subTitle="Inventory" />
+        <BreadcrumbItem mainTitle="Gestión de Recursos" subTitle="Inventario" />
         <div className='row'>
           <div className="col-md-12">
             <Inventory headquarterId={selectedHeadquarterId} organizationId={organizationId} addHistoryEntry={addHistoryEntry} />

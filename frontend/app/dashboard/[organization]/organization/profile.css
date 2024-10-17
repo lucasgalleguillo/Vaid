@@ -1,4 +1,6 @@
-
+body{
+  font-family: 'Inter', sans-serif;
+}
 .card-header-tabs{
     margin-bottom: 0 !important;
 }
@@ -20,7 +22,12 @@
 .g-2{
     margin-top: 20px !important;
 }
+
+
 @media (max-width: 767px) {
+  .btns{
+    display: inline-block !important;
+  }
   .img-profile-avtar{
     height: 70px !important;
     width: 80px !important;

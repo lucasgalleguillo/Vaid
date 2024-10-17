@@ -19,7 +19,41 @@ const SocialProfile = () => {
   const [organizationId, setOrganizationId] = useState(null);
   const { push } = useRouter();
   const [userDetails, setUserDetails] = useState(null);
+  const [isMember, setIsMember] = useState(false);
+  
+  useEffect(() => {
+    const checkMembership = async () => {
+      if (user?.id && organizationId) {
+        try {
+          // Enviando los valores como query params
+          const response = await fetch(`http://localhost:8000/api/check-membership/?organization_id=${organizationId}&user_id=${user.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
+          if (!response.ok) {
+            throw new Error('Error al verificar la membresía');
+          }
+
+          const data = await response.json();
+          setIsMember(data.is_member);
+        } catch (error) {
+          toast.error(`Error: ${error.message}`);
+        }
+      }
+    };
+
+    if (user?.id && organizationId) {
+      checkMembership();
+    }
+  }, [user, organizationId]);
+
+const handleEnter = () => {
+  const url = `${window.location.origin}/dashboard/${organizationId}/home`;
+  window.location.href = url;
+};
   useEffect(() => {
     const fetchUserDetails = async () => {
       if (user.id) {
@@ -36,13 +70,13 @@ const SocialProfile = () => {
             return;
           }
           if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('La respuesta de la red no fue satisfactoria');
           }
 
           const data = await response.json();
           setUserDetails(data);
         } catch (error) {
-          toast.error(`Failed to retrieve user. Error: ${error.message}`);
+          toast.error(`Error al recuperar el usuario. Error: ${error.message}`);
         }
       }
     };
@@ -58,9 +92,9 @@ const SocialProfile = () => {
                 const response = await fetch(`http://localhost:8000/api/user/${user.id}/apply-org/${orgId}`);
                 const data = await response.json();
                 if (response.ok) {
-                    toast.success('Join request sent successfully! Wait for approval!');
+                    toast.success('¡Solicitud para unirse enviada con éxito! ¡Espera la aprobación!');
                 } else {
-                    toast.error('Error sending join request. Contact support.');
+                    toast.error('Error al enviar la solicitud. Contacta con soporte.');
                 }
             } catch (error) {
                 console.error('Error: ', error);
@@ -82,13 +116,13 @@ const SocialProfile = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch completion status');
+          throw new Error('Error al verificar el estado de finalización');
         }
 
         const data = await response.json();
         setUserType(data.user_type);
       } catch (error) {
-        console.error('An error occurred:', error);
+        console.error('Ocurrió un error:', error);
       }
     }
   };
@@ -98,13 +132,13 @@ const SocialProfile = () => {
   }, [user]);
 
   useEffect(() => {
-    // Get the current URL
+    // Obtener la URL actual
     const currentUrl = window.location.href;
-    // Use URL constructor to parse the URL
+    // Usar el constructor de URL para analizar la URL
     const url = new URL(currentUrl);
-    // Split the pathname into segments
+    // Dividir el pathname en segmentos
     const pathSegments = url.pathname.split('/');
-    // Find the segment after 'dashboard'
+    // Buscar el segmento después de 'dashboard'
     const dashboardIndex = pathSegments.indexOf('dashboard');
     if (dashboardIndex !== -1 && pathSegments.length > dashboardIndex + 1) {
       setOrganizationId(pathSegments[dashboardIndex + 1]);
@@ -130,16 +164,30 @@ const SocialProfile = () => {
               setImage(avatar); // Usar imagen por defecto si no se encuentra imagen
             }
           } else {
-            toast.error('No image found for the specified user');
+            toast.error('No se encontró imagen para el usuario especificado');
           }
         } else {
-          toast.error('Error fetching image');
+          toast.error('Error al recuperar la imagen');
         }
       } catch (error) {
-        toast.error('Error fetching image');
+        toast.error('Error al recuperar la imagen');
       }
     }
   };
+
+    const handleLeave = async (organizationId) => {
+        try {
+            await fetch(`http://localhost:8000/api/person-organization-details-leave/${user.id}/${organizationId}/delete/`, {
+                method: 'DELETE',
+            });
+            toast.success('Abandonaste la organización.')
+            setIsMember(false)
+            
+        } catch (error) {
+            toast.error('Error al eliminar:', error);
+        }
+    };
+
 
   useEffect(() => {
     if (organizationId) {
@@ -158,13 +206,13 @@ const SocialProfile = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch organization');
+          throw new Error('Error al obtener la organización');
         }
 
         const data = await response.json();
         setOrganization(data);
       } catch (error) {
-        console.error('An error occurred:', error);
+        console.error('Ocurrió un error:', error);
       }
     }
   };
@@ -182,27 +230,46 @@ const SocialProfile = () => {
         <Card.Body className="pt-0">
           <Row className="align-items-end">
             <div className="col-md-auto text-md-start">
-              <Image className="img-fluid img-profile-avtar" src={avatar2} width={100} height={100} alt="User image" />
+              <Image className="img-fluid img-profile-avtar" src={avatar2} width={100} height={100} alt="Imagen de usuario" />
             </div>
             <div className="col">
               <Row className="justify-content-between align-items-end">
                 <Col md={5} xl={6} className="soc-profile-data">
-                  <h5 className="mb-1">{organization ? organization.name : 'Loading...'}</h5>
-                  <p className="mb-0">‎<Link href="#" className="link-primary"></Link></p>
+                  <h5 className="mb-1">{organization ? organization.name : 'Cargando...'}</h5>
+                  <p className="mb-0">‎<a href="#" className="link-primary"></a></p>
                 </Col>
-                <Col md={3} xl={2} xxl={2}>
-                  <Row className="g-1 text-center">
+
+
+                  {userType === 1 && (
+                    isMember ? (
+                  <Col md={6} xl={4} xxl={4}>
+                  <Row className="g-1 text-center d-flex justify-content-center">
                     <Col xs={6}>
-                      {userType === 1 ? (
-                        <a className="btn btn-primary applybtn" onClick={
-                          () => handleApply(organizationId)
-                        }>Apply</a>
-                      ) : (
-                        <h5 className="mb-0">‎</h5>
-                      )}
+                        <div className="d-flex btns">
+                          <button className="btn btn-primary me-2" onClick={handleEnter}>
+                          Entrar
+                          </button>
+                          <button className="btn btn-secondary" onClick={() => handleLeave(organizationId)}>
+                          Abandonar
+                          </button>
+                        </div>
+
+                        </Col>
+                      </Row>
                     </Col>
-                  </Row>
-                </Col>
+                        ) : (
+                    <Col md={3} xl={2} xxl={2}>
+                      <Row className="g-1 text-center">
+                        <Col xs={6}>
+                          <button className="btn btn-primary" onClick={() => handleApply(organizationId)}>
+                            Unirse
+                          </button>
+                          </Col>
+                      </Row>
+                    </Col>
+                        )
+                      )}
+
               </Row>
             </div>
           </Row>

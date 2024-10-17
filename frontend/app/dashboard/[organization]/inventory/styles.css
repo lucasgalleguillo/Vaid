@@ -5,6 +5,17 @@ body {
     padding: 0;
 }
 
+
+.selected-headquarter {
+    background-color: #f0f8ff; /* Color de fondo distinto */
+    border-left: 5px solid #007bff; /* Borde que destaca la sede seleccionada */
+  }
+  
+  .selected-headquarter:hover {
+    background-color: #f0f8ff; /* Mantener el mismo color en hover */
+  }
+  
+
 .hover-button-trash:hover{
     color: #c81d1d;
     transition: .2s;
@@ -218,7 +229,7 @@ table th {
   
 .p-history{
     font-family: 'Inter', sans-serif;;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 400;
     line-height: 1.6;
     padding: 1px ;
@@ -234,3 +245,9 @@ table th {
     margin-bottom: 20px; /* Separación inferior opcional */
   }
   
+.bg-success{
+    background-color: #0bb56b !important;
+}
+.bg-danger{
+  background-color: #e04f4f !important;
+}

@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { useActivationMutation } from "@/redux/features/authApiSlice";
 import { toast } from 'react-toastify';
 
-
 const page = ({ params }) => {
   const { push } = useRouter();
 
@@ -19,21 +18,21 @@ const page = ({ params }) => {
     activation({ uid, token })
       .unwrap()
       .then(() => {
-        toast.success('Account activated successfully');
+        toast.success('Cuenta activada con éxito');
       })
       .catch(() => {
-        toast.error('Failed to activate your account');
+        toast.error('Error al activar tu cuenta');
       })
       .finally(() => {
-        push('/auth/login');
+        window.location.href = '/auth/login';
       })
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     document.querySelector("body").classList.add("home-three");
   }, []);
+  
   const [active, setActive] = useState("collapse1");
-
 
   return (
     <LandingLayout header footer bodyClass={"home-three"} onePage>
@@ -48,7 +47,7 @@ const page = ({ params }) => {
                   data-aos-duration={1500}
                   data-aos-offset={50}
                 >
-                  Activating<br/>Your Account
+                  Activando<br/>Tu Cuenta
                 </h1>
                 <p
                   data-aos="fade-up"
@@ -56,7 +55,7 @@ const page = ({ params }) => {
                   data-aos-duration={1500}
                   data-aos-offset={50}
                 >
-                  You will be redirected soon to the login page. 
+                  Serás redirigido pronto a la página de inicio de sesión.
                 </p>
 
               </div>
@@ -68,4 +67,5 @@ const page = ({ params }) => {
     </LandingLayout>
   );
 };
+
 export default page;

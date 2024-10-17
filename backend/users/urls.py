@@ -7,7 +7,8 @@ urlpatterns = [
         CustomProviderAuthView.as_view(),
         name='provider-auth'
     ),
-
+    path('subscribe-newsletter/', SubscribeNewsletterView.as_view(), name='subscribe-newsletter'),
+    path('person-organization-details-leave/<int:user_id>/<int:organization_id>/delete/', PersonOrganizationDetailsDeleteViewLeave.as_view()),
     path('person-organization-details/<int:person_id>/<int:organization_id>/delete/', PersonOrganizationDetailsDeleteView.as_view()),
     path('user/<int:user_id>/apply-org/<int:org_id>/', ApplyOrgView.as_view()),
     path('user/form/<int:user_id>/', UserFormView.as_view()),
@@ -64,7 +65,27 @@ urlpatterns = [
     path('organization/upload-video/', VideoUploadView.as_view(), name='upload-organization-video'),
     path('isAdmin/', IsAdminView.as_view(), name='is-admin'),
     path('user/<int:user_id>/unassigned-tags/', UnassignedTagsAPIView.as_view(), name='unassigned-tags'),
+<<<<<<< HEAD
     
+=======
+    path('send-email-plat/', SendInvitationPlatView.as_view()),
+    path('organization/<int:organization_id>/all-products/', AllProductsView.as_view(), name='all-products'),
+    path('organizations/<int:organization_id>/events/<int:event_id>/', EventDetailView.as_view(), name='event-detail'),
+    path('organizations/<int:organization_id>/tasks/<int:task_id>/', TaskDetailView.as_view(), name='task-detail'),
+    path('tasks/<int:task_id>/mark-as-done/', MarkTaskAsDoneView.as_view(), name='mark-task-as-done'),
+    path('tasks/<int:task_id>/mark-as-pending/', MarkTaskAsPendingView.as_view(), name='mark-task-as-pending'),
+    path('organization/event/<int:event_id>/guests/', EventGuestsAPIView.as_view(), name='event-guests'),
+    path('event/participants/', EventParticipantsAPIView.as_view(), name='event-participants'),
+    path('organization/event/guest/<int:guest_id>/', DeleteGuestView.as_view(), name='delete-guest'),
+    path('organization/event/member/<int:member_id>/', DeleteMemberView.as_view(), name='delete-member'),
+    path('organization/event/<int:event_id>/', DeleteEventView.as_view(), name='delete-event'),
+    path('organization/event/<int:event_id>/finish/', FinishEventView.as_view(), name='finish-event'),
+    path('organization/event/<int:event_id>/toggle-state/', ToggleEventStateView.as_view(), name='toggle-event-state'),
+    path('event/<int:event_id>/toggle-attendance/<int:user_id>/', EventToggleAttendanceAPIView.as_view(), name='toggle_attendance'),
+    path('event/<int:event_id>/check-attendance/<int:user_id>/', CheckAttendanceAPIView.as_view(), name='check_attendance'),
+    path('upload-profile-image/', UploadProfileImageView.as_view(), name='upload_profile_image'),
+    path('check-membership/', CheckMembershipView.as_view(), name='check-membership'),
+>>>>>>> 40707caacfb45fd15530df281ed9aa09fff9f34c
     path('organization/DonationHistory/', DonationHistoryAPIView.as_view(), name='donation-history'),
     path('organization/OperationHistory/', OperationHistoryAPIView.as_view(), name='opedonation-product-detailsration-history'),
     path('organization/DonationMonth/' , DonationMonthAPIView.as_view(), name='donation-month'),
@@ -72,7 +93,15 @@ urlpatterns = [
     path('organization/DonationCategory/', DonationCategoryAPIView.as_view(), name='donation-category'),
     path('organization/TotalAmountOperation/', TotalAmountOperationAPIView.as_view(), name='operation-total-amount'),
     path('organization/TotalAmountDonation/', TotalAmountDonationAPIView.as_view(), name='donation-total-amount'),
+<<<<<<< HEAD
 
     path('organization/OrganizationList/', ListOrganizationAPIView.as_view(), name='organization-list'),
     
     ]
+=======
+    path('organization/OrganizationList/', ListOrganizationAPIView.as_view(), name='organization-list'),
+    path('organizations/candidatesorg/', ListCandidateOrganizationsAPIView.as_view(), name='candidate-organizations-list'),
+    path('person/<int:person_id>/update/', UpdatePersonView.as_view(), name='update_person'),
+    path('organization/<int:organization_id>/update-description/', UpdateOrganizationDescriptionView.as_view(), name='update_organization_description'),
+]
+>>>>>>> 40707caacfb45fd15530df281ed9aa09fff9f34c

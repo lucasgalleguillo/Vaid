@@ -7,10 +7,12 @@ import { useRetrieveUserQuery } from '@/redux/features/authApiSlice';
 import './profile.css';
 import Friends from "@/views/Application/Friend";
 import FriendsRequest from "@/views/Application/friendRequest";
+import FormDetails from "@/views/Application/formDetails";
 import SocialTab from "@/views/Application/social-tab";
 import SocialProfile from "@/views/Application/social-media";
 import Suggestions from "@/views/Application/suggests";
 import { Col, Row, Tab } from "react-bootstrap";
+import Requests from "@/views/Application/orgRequests";
 
 const Page = () => {
   const { data: user, isError, isLoading } = useRetrieveUserQuery();
@@ -59,6 +61,8 @@ const Page = () => {
                   <FriendsRequest />
                   <Friends />
                   <Suggestions />
+                  <FormDetails />
+                  <Requests />
                 </Tab.Content>
               </Row>
             </Tab.Container>
@@ -72,7 +76,7 @@ const Page = () => {
               </Row>
             </Tab.Container>
           ) : (
-            <p>User type not recognized</p>
+            <p>Tipo de usuario no reconocido</p>
           )}
         </Col>
         <Col sm={2}></Col>

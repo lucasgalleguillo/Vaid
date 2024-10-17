@@ -1,13 +1,20 @@
 from rest_framework import serializers
 from .models import *
 from django.core.exceptions import ValidationError
+<<<<<<< HEAD
 
+=======
+>>>>>>> 40707caacfb45fd15530df281ed9aa09fff9f34c
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = '__all__'
 
+class NewsletterSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsletterSubscription
+        fields = ['email']
 
 class CandidateDetailSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='Person.User.first_name')
@@ -17,16 +24,27 @@ class CandidateDetailSerializer(serializers.ModelSerializer):
     country = serializers.CharField(source='Person.country')
     user_id = serializers.CharField(source='Person.User.id')
     born_date = serializers.DateField(source='Person.born_date')
+    profession = serializers.DateField(source='Person.profession')
+    experience = serializers.DateField(source='Person.experience')
+    street_name = serializers.DateField(source='Person.street_name')
+    street_number = serializers.DateField(source='Person.street_number')
+    city = serializers.DateField(source='Person.city')
+    modality = serializers.DateField(source='Person.modality')
+    topics = serializers.DateField(source='Person.topics')
+    goals = serializers.DateField(source='Person.goals')
+    motivations = serializers.DateField(source='Person.motivations')
+    email = serializers.CharField(source='Person.User.email')
 
     class Meta:
         model = Candidate
-        fields = ['first_name', 'last_name', 'disponibility', 'country', 'request_date', 'user_id', 'born_date', 'interviewed', 'id']
+        fields = '__all__'
 
 
 class PersonSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='User.first_name')
     last_name =serializers.CharField(source='User.last_name')
     
+    email = serializers.CharField(source='User.email')
 
 
     class Meta:
@@ -34,7 +52,10 @@ class PersonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrganizationSerializer(serializers.ModelSerializer):    
+<<<<<<< HEAD
     person_count = serializers.IntegerField()
+=======
+>>>>>>> 40707caacfb45fd15530df281ed9aa09fff9f34c
     profile_image = serializers.SerializerMethodField()
 
     class Meta:
@@ -58,6 +79,21 @@ def validate_image_format(value):
             raise ValidationError("La imagen debe ser de tipo PNG, JPG o JPEG.")
     return value
 
+    def get_profile_image(self, obj):
+        # Obtiene la imagen del usuario principal de la organización
+        user_image = Image.objects.filter(User=obj.User).first()
+        if user_image:
+            return user_image.image.url  # Retorna la URL de la imagen si existe
+        return None
+
+    # Definimos una función de validación para los formatos de imagen permitidos.
+def validate_image_format(value):
+    if value:
+        # Obtenemos el tipo de archivo del contenido de la imagen
+        valid_formats = ['image/png', 'image/jpeg', 'image/jpg']
+        if value.content_type not in valid_formats:
+            raise ValidationError("La imagen debe ser de tipo PNG, JPG o JPEG.")
+    return value
 
 class TaskSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(validators=[validate_image_format], required=False)
@@ -167,11 +203,14 @@ class HistorySerializer(serializers.ModelSerializer):
 
 
 class EventPersonSerializer(serializers.ModelSerializer):
-    Person = PersonSerializer()
+    first_name = serializers.CharField(source='Person.User.first_name', read_only=True)
+    last_name = serializers.CharField(source='Person.User.last_name', read_only=True)
+    email = serializers.CharField(source='Person.User.email', read_only=True)
 
     class Meta:
         model = EventPersonDetails
         fields = '__all__'
+
 
 class InvitedEventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -253,8 +292,13 @@ class DonationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Donation
+<<<<<<< HEAD
         fields = ['id', 'description', 'quantity', 'date', 'Organization']
     # Este metdo se usa para cuando creamos una donacion, se crean los detalles de la donacion AUTOMATICAMENTE y se actualiza el inventario
+=======
+        fields = ['id', 'description', 'quantity', 'date', 'type', 'Organization']
+
+>>>>>>> 40707caacfb45fd15530df281ed9aa09fff9f34c
     # def create(self, validated_data):
     #     products_data = validated_data.pop('products')
     #     donation = Donation.objects.create(**validated_data)

@@ -14,11 +14,17 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgb(40, 80, 206);
+  background-color: #d3d3d3;
   border-radius: 20px;
   border: 3.5px solid rgb(255, 255, 255);
 }
+.input-nl{
+  border: 1px solid gray !important;
+}
 
+.btn-footer-ln{
+  border: 1px solid white !important;
+} 
 .main-menu .navbar-collapse .mobile-menu li ul {
   opacity: 1 !important;
   visibility: unset !important;
@@ -180,4 +186,45 @@ p.amount span {
 .close{
   background-color: #fff; 
   font-size: 30px;
+}
+
+.page-header .page-header-title{
+  margin-top: -20px;
+  margin-bottom: 10px;
+}
+
+.breadcrumb-item + .breadcrumb-item{
+  padding-left: 0px !important;  
+}
+
+.page-header .breadcrumb .breadcrumb-item:last-child{
+  margin-top: 0px !important;
+}
+
+.hover-button-eye{
+  font-size: 18px;
+  
+}
+.hover-button-eye:hover{
+  color: #2950CE;
+  transition: .2s;
+}
+.hover-button-trash{
+  font-size: 18px;
+}
+
+.page-link{
+  padding: 8px !important;
+  border-radius: 8px !important;
+  border: 1px solid #ffffff00 !important;
+}
+
+.page-link:hover{
+  background-color: #fff !important;
+  color: #696969 !important;
+  border: 1px solid #696969 !important;
+}
+
+.page-link active{
+  border: 1px solid #696969 !important;
 }

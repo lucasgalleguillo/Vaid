@@ -9,12 +9,11 @@ import { useLogoutMutation } from "@/redux/features/authApiSlice";
 import { logout as setLogout } from '@/redux/features/authSlice'; 
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
-
+import './topbar.css'
 
 import avatar from "@/public/assets/images/user/avatar-2.jpg";
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { useRetrieveUserQuery } from '@/redux/features/authApiSlice';
-//import images
 
 const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, toogleMobileSidebarHide }) => {
 
@@ -23,8 +22,7 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
 
     const backendUrl = 'http://localhost:8000'; // Cambia esto a la URL de tu backend
     
-   const fetchImage = async () => 
-        {
+    const fetchImage = async () => {
         const formData = new FormData();
         formData.append('user_id', user.id);
         try {
@@ -40,52 +38,57 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
                     const imageUrl = `${backendUrl}${data.images[0].image}`;
 
                     if (imageUrl) {
-                        console.log("Image URL:", imageUrl); // Verificar la URL de la imagen en la consola
+                        console.log("URL de la imagen:", imageUrl); // Verificar la URL de la imagen en la consola
                         setImage(imageUrl); // Asegúrate de usar la propiedad correcta
                     } else {
                         setImage(avatar); // Usar imagen por defecto si no se encuentra imagen
                     }
                 } else {
-                    toast.error('No image found for the specified user');
+                    toast.error('No se encontró una imagen para el usuario especificado');
                 }
             } else {
-                toast.error('Error fetching image');
+                toast.error('Error al obtener la imagen');
             }
         } catch (error) {
-            toast.error('Error fetching image');
+            toast.error('Error al obtener la imagen');
         }
     };
 
     if(!isFetching){
-    useEffect(() => {
-        fetchImage();
-       
-    }, []);
+        useEffect(() => {
+            fetchImage();
+        }, []);
     }
+
     const dispatch = useDispatch();
-    // Function to handle theme mode change
+    
     const handleThemeChange = (value) => {
         dispatch(changeThemeMode(value));
     };
+
     const { push } = useRouter();
 
     const dispatch2 = useAppDispatch();
     const [logout] = useLogoutMutation();
     const { isAuthenticated } = useAppSelector(state => state.auth);
 
+    const handleRedirect = () => {
+        window.location.href = `http://localhost:3000/dashboard/`; // Redireccionar
+    };
+
     const handleLogout = () => {
-    logout()
-      .unwrap()
-      .then(() => {
-        dispatch2(setLogout())
-        toast.success('Logged out successfully.');
-        push('/auth/login');
-      })
-      .catch(() => {
-        dispatch2(setLogout())
-        toast.success('Logged out successfully.');
-        push('/auth/login');
-      })
+        logout()
+        .unwrap()
+        .then(() => {
+            dispatch2(setLogout())
+            toast.success('Cerraste sesión con éxito.');
+            window.location.href = '/auth/login';
+        })
+        .catch(() => {
+            dispatch2(setLogout())
+            toast.success('Cerraste sesión con éxito.');
+            window.location.href = '/auth/login';
+        })
     }
 
     const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -98,6 +101,7 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
     const closeDropdown = () => {
         setDropdownOpen(false);
     };
+
     return (
         <React.Fragment>
             <header className="pc-header">
@@ -105,36 +109,20 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
                     <div className="me-auto pc-mob-drp">
                         <ul className="list-unstyled">
                             <li className="pc-h-item pc-sidebar-collapse">
-                                <Link href="#" className="pc-head-link ms-0" id="sidebar-hide" onClick={toogleSidebarHide}>
+                                <a href="#" className="pc-head-link ms-0" id="sidebar-hide" onClick={toogleSidebarHide}>
                                     <i className="ti ti-menu-2"></i>
-                                </Link>
+                                </a>
                             </li>
                             <li className="pc-h-item pc-sidebar-popup">
-                                <Link href="#" className="pc-head-link ms-0" id="mobile-collapse" onClick={toogleMobileSidebarHide}>
+                                <a href="#" className="pc-head-link ms-0" id="mobile-collapse" onClick={toogleMobileSidebarHide}>
                                     <i className="ti ti-menu-2"></i>
-                                </Link>
+                                </a>
                             </li>
                         </ul>
                     </div>
 
                     <div className="ms-auto">
                         <ul className="list-unstyled">
-                            {/* <Dropdown as="li" className="pc-h-item">
-                                <Dropdown.Toggle as="a" className="pc-head-link arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button"
-                                    aria-haspopup="false" aria-expanded="false">
-                                    <i className="ph-duotone ph-sun-dim"></i>
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu className="dropdown-menu-end pc-h-dropdown">
-                                    <Dropdown.Item onClick={() => handleThemeChange(THEME_MODE.DARK)}>
-                                        <i className="ph-duotone ph-moon"></i>
-                                        <span>Dark</span>
-                                    </Dropdown.Item>
-                                    <Dropdown.Item onClick={() => handleThemeChange(THEME_MODE.LIGHT)}>
-                                        <i className="ph-duotone ph-sun-dim"></i>
-                                        <span>Light</span>
-                                    </Dropdown.Item>
-                                </Dropdown.Menu>
-                                </Dropdown> */}
                             <Dropdown as="li" className="pc-h-item header-user-profile">
                                 <Dropdown.Toggle className="pc-head-link arrow-none me-0" data-bs-toggle="dropdown" href="#"
                                     aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false" style={{ border: "none" }}>
@@ -142,11 +130,11 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu className="dropdown-user-profile dropdown-menu-end pc-h-dropdown">
                                     <div className="dropdown-header d-flex align-items-center justify-content-between">
-                                        <h4 className="m-0">Profile</h4>
+                                        <h4 className="m-0">Perfil</h4>
                                     </div>
                                     <div className="dropdown-body">
                                         <SimpleBar className="profile-notification-scroll position-relative" style={{ maxHeight: "calc(100vh - 225px)" }}>
-                                        <ul className="list-group list-group-flush w-100">
+                                            <ul className="list-group list-group-flush w-100">
                                                 <li className="list-group-item">
                                                     <div className="d-flex align-items-center">
                                                         <div className="flex-shrink-0">
@@ -159,32 +147,20 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
                                                     </div>
                                                 </li>
                                                 <li className="list-group-item">
-                                                <Dropdown.Item>
+                                                    <div className="dropdown-item" onClick={handleRedirect}>
                                                         <span className="d-flex align-items-center">
                                                             <i className="ph-duotone ph-user-circle"></i>
-                                                            <a href='/dashboard'>Profile</a>
-                                                        </span>
-                                                    </Dropdown.Item>
-                                                    <div className="dropdown-item">
-                                                        <span className="d-flex align-items-center">
-                                                            <i className="ph-duotone ph-globe-hemisphere-west"></i>
-                                                            <span>Languages</span>
-                                                        </span>
-                                                        <span className="flex-shrink-0">
-                                                            <select className="form-select bg-transparent form-select-sm border-0 shadow-none">
-                                                                <option value="1">English</option>
-                                                                <option value="2">Spain</option>
-                                                            </select>
+                                                            <a>Perfil</a>
                                                         </span>
                                                     </div>
                                                 </li>
                                                 <li className="list-group-item">
-                                                    <Dropdown.Item>
+                                                    <div className="dropdown-item" onClick={handleLogout}>
                                                         <span className="d-flex align-items-center">
                                                             <i className="ph-duotone ph-sign-out"></i>
-                                                            <a onClick={handleLogout}>Logout</a>
+                                                            <a>Cerrar Sesión</a>
                                                         </span>
-                                                    </Dropdown.Item>
+                                                    </div>
                                                 </li>
                                             </ul>
                                         </SimpleBar>
@@ -200,4 +176,3 @@ const TopBar = ({ handleOffcanvasToggle, changeThemeMode, toogleSidebarHide, too
 };
 
 export default TopBar;
-

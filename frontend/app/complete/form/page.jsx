@@ -10,6 +10,7 @@ import ava2 from "@/public/assets/images/user/avatar-2.jpg";
 import Image from "next/image";
 import { ToastContainer, toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import Select from 'react-select';  // Importar react-select
 
 const Page = () => {
     const { data: user, isError, isLoading } = useRetrieveUserQuery();
@@ -22,19 +23,19 @@ const Page = () => {
     const [formData, setFormData] = useState({
         dateOfBirth: '',
         profession: '',
+        hasExperience: '',
         experience: '',
         street: '',
         city: '',
         availableDays: [],
         availableTimes: [],
         modality: '',
-        topics: '',
+        topics: [],
         goals: '',
         motivations: ''
     });
 
     useEffect(() => {
-        // Calculate progress when the component mounts
         const calculateProgress = () => {
             return ((parseInt(key.split('-')[1]) - 1) / (totalTabs - 1)) * 100;
         };
@@ -70,22 +71,28 @@ const Page = () => {
         }
     };
 
+    const handleTopicsChange = (selectedOptions) => {
+        // Actualiza el estado con los valores seleccionados (array de temas)
+        setFormData({
+            ...formData,
+            topics: selectedOptions ? selectedOptions.map(option => option.value) : []  // Mapear para obtener solo los valores (temas seleccionados)
+        });
+    };
+    
     const validateForm = () => {
         const newErrors = {};
-        if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
-        if (!formData.profession) newErrors.profession = "Profession is required";
-        if (!formData.experience) newErrors.experience = "Experience is required";
-        if (!formData.street) newErrors.street = "Street is required";
-        if (!formData.city) newErrors.city = "City is required";
-        if (formData.availableDays.length === 0) newErrors.availableDays = "At least one available day is required";
-        if (formData.availableTimes.length === 0) newErrors.availableTimes = "At least one available time is required";
-        if (!formData.modality) newErrors.modality = "Modality is required";
-        if (!formData.topics) newErrors.topics = "Topics are required";
-        if (!formData.goals) newErrors.goals = "Goals are required";
-        if (!formData.motivations) newErrors.motivations = "Motivations are required";
+        if (!formData.dateOfBirth) newErrors.dateOfBirth = "La fecha de nacimiento es obligatoria";
+        if (!formData.profession) newErrors.profession = "La profesión es obligatoria";
+        if (!formData.street) newErrors.street = "La calle es obligatoria";
+        if (!formData.city) newErrors.city = "La ciudad es obligatoria";
+        if (formData.availableDays.length === 0) newErrors.availableDays = "Se requiere al menos un día disponible";
+        if (formData.availableTimes.length === 0) newErrors.availableTimes = "Se requiere al menos un horario disponible";
+        if (!formData.modality) newErrors.modality = "La modalidad es obligatoria";
+        if (!formData.topics) newErrors.topics = "Los temas son obligatorios";
+        if (!formData.goals) newErrors.goals = "Los objetivos son obligatorios";
+        if (!formData.motivations) newErrors.motivations = "Las motivaciones son obligatorias";
         return newErrors;
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -106,25 +113,21 @@ const Page = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to save form data');
+                throw new Error('Error al guardar los datos del formulario');
             }
 
             const data = await response.json();
-            toast.success(data.message || 'Form data saved successfully!');
-            push('/dashboard')
+            toast.success(data.message || '¡Datos del formulario guardados con éxito!');
+            window.location.href = '/dashboard';
 
         } catch (error) {
-            console.error('Failed to save form data', error);
-            toast.error('Failed to save form data');
+            console.error('Error al guardar los datos del formulario', error);
+            toast.error('Error al guardar los datos del formulario');
         }
     };
 
-
-
-
-
-    if (isLoading) return <p>Loading...</p>;
-    if (isError || !user) return <p>Error loading user data!</p>;
+    if (isLoading) return <p>Cargando...</p>;
+    if (isError || !user) return <p>¡Error al cargar los datos del usuario!</p>;
 
     return (
         <Layout>
@@ -132,8 +135,8 @@ const Page = () => {
                 <Col sm={12}>
                     <div id="basicwizard" className="form-wizard row justify-content-center">
                         <div className="col-sm-12 col-md-6 col-xxl-4 text-center">
-                            <h3>Build Your Profile</h3>
-                            <p className="text-muted mb-4">You need to complete your profile to continue.</p>
+                            <h3>Construye tu perfil</h3>
+                            <p className="text-muted mb-4">Necesitas completar tu perfil para continuar.</p>
                         </div>
                         <Col xs={12}>
                             <TabContainer defaultActiveKey="tab-1" activeKey={key} onSelect={handleTabSelect}>
@@ -143,28 +146,28 @@ const Page = () => {
                                             <Nav.Item as="li" className="nav-item" data-target-form="#contactDetailForm">
                                                 <Nav.Link eventKey="tab-1" href="#contactDetail" data-bs-toggle="tab" data-toggle="tab">
                                                     <i className="ph-duotone ph-user-circle"></i>
-                                                    <span className="d-none d-sm-inline">About me</span>
+                                                    <span className="d-none d-sm-inline">Sobre mí</span>
                                                 </Nav.Link>
                                             </Nav.Item>
 
                                             <Nav.Item data-target-form="#jobDetailForm">
                                                 <Nav.Link eventKey="tab-2" href="#jobDetail" data-bs-toggle="tab" data-toggle="tab" className="nav-link icon-btn">
                                                     <i className="ph-duotone ph-map-pin"></i>
-                                                    <span className="d-none d-sm-inline">Location and Availability</span>
+                                                    <span className="d-none d-sm-inline">Ubicación y Disponibilidad</span>
                                                 </Nav.Link>
                                             </Nav.Item>
 
                                             <Nav.Item className="nav-item" data-target-form="#educationDetailForm">
                                                 <Nav.Link eventKey="tab-3" href="#educationDetail" data-bs-toggle="tab" data-toggle="tab" className="nav-link icon-btn">
                                                     <i className="ph-duotone ph-user"></i>
-                                                    <span className="d-none d-sm-inline">Volunteer Preferences</span>
+                                                    <span className="d-none d-sm-inline">Preferencias del Usuario</span>
                                                 </Nav.Link>
                                             </Nav.Item>
 
                                             <Nav.Item>
                                                 <Nav.Link eventKey="tab-4" href="#finish" data-bs-toggle="tab" data-toggle="tab" className="nav-link icon-btn">
                                                     <i className="ph-duotone ph-check-circle"></i>
-                                                    <span className="d-none d-sm-inline">Goals and Motivations</span>
+                                                    <span className="d-none d-sm-inline">Objetivos y Motivaciones</span>
                                                 </Nav.Link>
                                             </Nav.Item>
 
@@ -178,49 +181,57 @@ const Page = () => {
 
                                             <Tab.Pane eventKey="tab-1" className="tab-pane" id="contactDetail">
                                                 <div className="text-center">
-                                                    <h3 className="mb-2">Who you are?</h3>
-                                                    <small className="text-muted">Let us know more about your skills and background</small>
+                                                    <h3 className="mb-2">¿Quién eres?</h3>
+                                                    <small className="text-muted">Cuéntanos más sobre tus habilidades y experiencia</small>
                                                 </div>
                                                 <div className="row mt-4">
                                                     <div className="col">
                                                         <div className="row">
                                                             <div className="col-sm-6">
                                                                 <div className="form-group">
-                                                                    <Form.Label htmlFor="example-datemax">Date of Birth</Form.Label>
+                                                                    <Form.Label htmlFor="example-datemax">Fecha de Nacimiento</Form.Label>
                                                                     <Form.Control type="date" id="example-datemax" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
                                                                 </div>
                                                             </div>
                                                             <div className="col-sm-6">
                                                                 <div className="form-group">
-                                                                    <label className="form-label">Profession</label>
+                                                                    <label className="form-label">Ocupación</label>
                                                                     <input
                                                                         type="text"
-                                                                        className="form-control"
+                                                                        className="form-control capitalize-input"
                                                                         name="profession"
-                                                                        placeholder="Are you a professional? In what field?"
+                                                                        placeholder="¿En qué campo?"
                                                                         value={formData.profession}
                                                                         onChange={handleChange}
                                                                     />
                                                                 </div>
                                                             </div>
                                                             <div className="col-sm-6">
-                                                                <div className="form-group">                                                            <label className="form-label">Did you have a volunteer expierience?</label>
-                                                                    <select className="form-select height-checkbox">
-                                                                        <option>Yes</option>
-                                                                        <option>No</option>
+                                                                <div className="form-group">
+                                                                    <label className="form-label">¿Has tenido experiencia siendo parte de una organización?</label>
+                                                                    <select
+                                                                        className="form-select height-checkbox"
+                                                                        name="hasExperience"
+                                                                        value={formData.hasExperience}
+                                                                        onChange={handleChange}
+                                                                    >
+                                                                        <option value="">Selecciona una opción</option>
+                                                                        <option value="yes">Sí</option>
+                                                                        <option value="no">No</option>
                                                                     </select>                                                                    
                                                                 </div>
                                                             </div>
                                                             <div className="col-sm-6">
                                                                 <div className="form-group">
-                                                                        <label className="form-label">Tell us about your experience</label>
-                                                                        <textarea
-                                                                            className="form-control"
-                                                                            name="experience"
-                                                                            placeholder="Describe any relevant experience or skills."
-                                                                            value={formData.experience}
-                                                                            onChange={handleChange}
-                                                                        />
+                                                                    <label className="form-label">Cuéntanos sobre tu experiencia</label>
+                                                                    <textarea
+                                                                        className="form-control"
+                                                                        name="experience"
+                                                                        placeholder="Describe cualquier experiencia o habilidades relevantes."
+                                                                        value={formData.experience}
+                                                                        onChange={handleChange}
+                                                                        disabled={formData.hasExperience === 'no'} // Deshabilitar si no tiene experiencia
+                                                                    />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -230,115 +241,115 @@ const Page = () => {
 
                                             <Tab.Pane eventKey="tab-2" className="tab-pane" id="jobDetail">
                                                 <div className="text-center">
-                                                    <h3 className="mb-2">Location and Availability</h3>
-                                                    <small className="text-muted">Provide your location and when you're available to volunteer.</small>
+                                                    <h3 className="mb-2">Ubicación y Disponibilidad</h3>
+                                                    <small className="text-muted">Proporciona tu ubicación y cuándo estás disponible para realizar actividades.</small>
                                                 </div>
                                                 <div className="row mt-4">
                                                     <div className="col-sm-6">
                                                         <div className="form-group">
-                                                            <label className="form-label">Street</label>
+                                                            <label className="form-label">Ciudad</label>
                                                             <input
                                                                 type="text"
-                                                                className="form-control"
-                                                                name="street"
-                                                                placeholder="Enter Street"
-                                                                value={formData.street}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-sm-6">
-                                                        <div className="form-group">
-                                                            <label className="form-label">City</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control"
+                                                                className="form-control capitalize-input"
                                                                 name="city"
-                                                                placeholder="Enter City"
+                                                                placeholder="Introduce la ciudad"
                                                                 value={formData.city}
                                                                 onChange={handleChange}
                                                             />
                                                         </div>
                                                     </div>
                                                     <div className="col-sm-6">
+                                                        <div className="form-group">
+                                                            <label className="form-label">Calle</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control capitalize-input"
+                                                                name="street"
+                                                                placeholder="Introduce la calle"
+                                                                value={formData.street}
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-sm-6">
                                                         <div className="form-group row">
-                                                            <label className="form-label">Available days</label>
+                                                            <label className="form-label">Días disponibles</label>
                                                             <Col sm={13}>
                                                                 <div className="label-checkbox">
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
-                                                                        label="Mon"
+                                                                        label="Lun"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Mon"
-                                                                        checked={formData.availableDays.includes("Mon")}
+                                                                        value="Lun"
+                                                                        checked={formData.availableDays.includes("Lun")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh2"
-                                                                        label="Tue"
+                                                                        label="Mar"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Tue"
-                                                                        checked={formData.availableDays.includes("Tue")}
+                                                                        value="Mar"
+                                                                        checked={formData.availableDays.includes("Mar")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh3"
-                                                                        label="Wed"
+                                                                        label="Mié"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Wed"
-                                                                        checked={formData.availableDays.includes("Wed")}
+                                                                        value="Mié"
+                                                                        checked={formData.availableDays.includes("Mié")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh3"
-                                                                        label="Thu"
+                                                                        label="Jue"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Thu"
-                                                                        checked={formData.availableDays.includes("Thu")}
+                                                                        value="Jue"
+                                                                        checked={formData.availableDays.includes("Jue")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh3"
-                                                                        label="Fri"
+                                                                        label="Vie"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Fri"
-                                                                        checked={formData.availableDays.includes("Fri")}
+                                                                        value="Vie"
+                                                                        checked={formData.availableDays.includes("Vie")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh3"
-                                                                        label="Sat"
+                                                                        label="Sáb"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Sat"
-                                                                        checked={formData.availableDays.includes("Sat")}
+                                                                        value="Sáb"
+                                                                        checked={formData.availableDays.includes("Sáb")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh3"
-                                                                        label="Sun"
+                                                                        label="Dom"
                                                                         className="small-checkbox"
                                                                         name="availableDays"
-                                                                        value="Sun"
-                                                                        checked={formData.availableDays.includes("Sun")}
+                                                                        value="Dom"
+                                                                        checked={formData.availableDays.includes("Dom")}
                                                                         onChange={handleChange}
                                                                     />
                                                                 </div>
@@ -347,50 +358,40 @@ const Page = () => {
                                                     </div>
                                                     <div className="col-sm-6">
                                                         <div className="form-group row">
-                                                            <label className="form-label">Times of the day</label>
+                                                            <label className="form-label">Horarios del día</label>
                                                             <Col sm={10}>
                                                                 <div className="label-checkbox">
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
-                                                                        label="Morning"
+                                                                        label="Mañana"
                                                                         className="small-checkbox"
                                                                         name="availableTimes"
-                                                                        value="Morning"
-                                                                        checked={formData.availableTimes.includes("Morning")}
+                                                                        value="Mañana"
+                                                                        checked={formData.availableTimes.includes("Mañana")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
                                                                         id="customCheckinlh2"
-                                                                        label="Afternoon"
+                                                                        label="Tarde"
                                                                         className="small-checkbox"
                                                                         name="availableTimes"
-                                                                        value="Afternoon"
-                                                                        checked={formData.availableTimes.includes("Afternoon")}
+                                                                        value="Tarde"
+                                                                        checked={formData.availableTimes.includes("Tarde")}
                                                                         onChange={handleChange}
                                                                     />
                                                                     <Form.Check
                                                                         inline
                                                                         type="checkbox"
+
                                                                         id="customCheckinlh3"
-                                                                        label="Evening"
+                                                                        label="Noche"
                                                                         className="small-checkbox"
                                                                         name="availableTimes"
-                                                                        value="Evening"
-                                                                        checked={formData.availableTimes.includes("Evening")}
-                                                                        onChange={handleChange}
-                                                                    />
-                                                                    <Form.Check
-                                                                        inline
-                                                                        type="checkbox"
-                                                                        id="customCheckinlh3"
-                                                                        label="Night"
-                                                                        className="small-checkbox"
-                                                                        name="availableTimes"
-                                                                        value="Night"
-                                                                        checked={formData.availableTimes.includes("Night")}
+                                                                        value="Noche"
+                                                                        checked={formData.availableTimes.includes("Noche")}
                                                                         onChange={handleChange}
                                                                     />
                                                                 </div>
@@ -402,20 +403,20 @@ const Page = () => {
 
                                             <Tab.Pane eventKey="tab-3" className="tab-pane" id="educationDetail">
                                                 <div className="text-center">
-                                                    <h3 className="mb-2">Volunteer Preferences</h3>
-                                                    <small className="text-muted">Tell us about your goals and motivations for volunteering.</small>
+                                                    <h3 className="mb-2">Preferencias del Usuario</h3>
+                                                    <small className="text-muted">Cuéntanos sobre tus objetivos y motivaciones para estar en una organizacion.</small>
                                                 </div>
                                                 <div className="row">
                                                     <div className="col-sm-6">
                                                         <div className="form-group row">
-                                                            <label className="form-label">Modality Preference</label>
+                                                            <label className="form-label">Preferencia de Modalidad</label>
                                                             <Col sm={13}>
                                                                 <div className="label-checkbox">
                                                                     <Form.Check
                                                                         inline
                                                                         type="radio"
                                                                         name="modality"
-                                                                        label="In-person"
+                                                                        label="Presencial"
                                                                         className="small-checkbox"
                                                                         value="In-person"
                                                                         checked={formData.modality === "In-person"}
@@ -437,7 +438,7 @@ const Page = () => {
                                                                         type="radio"
                                                                         name="modality"
                                                                         id="customCheckinlh3"
-                                                                        label="Both types"
+                                                                        label="Ambos tipos"
                                                                         className="small-checkbox"
                                                                         value="Both types"
                                                                         checked={formData.modality === "Both types"}
@@ -449,15 +450,39 @@ const Page = () => {
                                                     </div>
                                                     <div className="col-md-12">
                                                         <div className="mb-3">
-                                                            <label className="form-label" htmlFor="schoolLocation">Preferred Topics</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control"
-                                                                id="schoolLocation"
+                                                            <label className="form-label" htmlFor="schoolLocation">¿Qué te gusta hacer?</label>
+                                                            <Select
                                                                 name="topics"
-                                                                placeholder="Enter your preferred topic. Ex: abuse, environment, educational support, etc."
-                                                                value={formData.topics}
-                                                                onChange={handleChange}
+                                                                options={[
+                                                                    { value: 'Arte', label: 'Arte' },
+                                                                    { value: 'Música', label: 'Música' },
+                                                                    { value: 'Tecnología', label: 'Tecnología' },
+                                                                    { value: 'Ciencia', label: 'Ciencia' },
+                                                                    { value: 'Literatura', label: 'Literatura' },
+                                                                    { value: 'Deportes', label: 'Deportes' },
+                                                                    { value: 'Cine', label: 'Cine' },
+                                                                    { value: 'Fotografía', label: 'Fotografía' },
+                                                                    { value: 'Viajes', label: 'Viajes' },
+                                                                    { value: 'Historia', label: 'Historia' },
+                                                                    { value: 'Derechos Humanos', label: 'Derechos Humanos' },
+                                                                    { value: 'Voluntariado', label: 'Voluntariado' },
+                                                                    { value: 'Sostenibilidad', label: 'Sostenibilidad' },
+                                                                    { value: 'Ayuda Humanitaria', label: 'Ayuda Humanitaria' },
+                                                                    { value: 'Educación', label: 'Educación' },
+                                                                    { value: 'Igualdad de Género', label: 'Igualdad de Género' },
+                                                                    { value: 'Salud Pública', label: 'Salud Pública' },
+                                                                    { value: 'Pobreza', label: 'Pobreza' },
+                                                                    { value: 'Refugiados', label: 'Refugiados' },
+                                                                    { value: 'Inclusión Social', label: 'Inclusión Social' },                                                                    
+                                                                    { value: 'Política', label: 'Política' }
+                                                                ]}
+                                                                isMulti
+                                                                onChange={handleTopicsChange}  // Utiliza el nuevo handleTopicsChange
+                                                                className="basic-multi-select"
+                                                                classNamePrefix="select"
+                                                                id="topicsSelect"
+                                                                value={Array.isArray(formData.topics) ? formData.topics.map(value => ({ value, label: value })) : []}  // Mapear para mostrar los valores seleccionados
+                                                                isClearable
                                                             />
                                                         </div>
                                                     </div>
@@ -467,61 +492,68 @@ const Page = () => {
                                             <Tab.Pane eventKey="tab-4" className="tab-pane" id="finish">
                                                 <form id="finishForm" onSubmit={handleSubmit}>
                                                     <div className="text-center">
-                                                        <h3 className="mb-2">Your Goals</h3>
-                                                        <small className="text-muted">Tell us about your goals and motivations for volunteering.</small>
+                                                        <h3 className="mb-2">Tus Objetivos</h3>
+                                                        <small className="text-muted">Cuéntanos sobre tus objetivos y motivaciones para estar en una organizacion.</small>
                                                     </div>
                                                     <div className="row mt-4">
-                                                    <div className="col-sm-6">
-                                                        <div className="form-group">
-                                                        <label className="form-label" htmlFor="goals">Volunteering Goals</label>
-                                                            <textarea
+                                                        <div className="col-sm-6">
+                                                            <div className="form-group">
+                                                                <label className="form-label" htmlFor="goals">Objetivos</label>
+                                                                <textarea
                                                                     className="form-control"
                                                                     id="goals"
                                                                     name="goals"
-                                                                    placeholder="What are your goals for volunteering?"
+                                                                    placeholder="¿Cuáles son tus objetivos para ser miembro de una organizacion?"
                                                                     value={formData.goals}
                                                                     onChange={handleChange}
                                                                 />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="col-sm-6">
-                                                        <div className="form-group">
-                                                            <label className="form-label" htmlFor="motivations">Motivations</label>
+                                                        <div className="col-sm-6">
+                                                            <div className="form-group">
+                                                                <label className="form-label" htmlFor="motivations">Motivaciones</label>
                                                                 <textarea
                                                                     className="form-control"
                                                                     id="motivations"
                                                                     name="motivations"
-                                                                    placeholder="What motivates you to volunteer?"
+                                                                    placeholder="¿Qué te motiva a estar en una organizacion?"
                                                                     value={formData.motivations}
                                                                     onChange={handleChange}
                                                                 />
+                                                            </div>
                                                         </div>
-                                                    </div>
                                                     </div>
                                                 </form>
                                             </Tab.Pane>
                                         </Tab.Content>
-                                                          <div className="d-flex justify-content-center mt-30">
-                                                            <div className="previous me-2">
-                                                                <button
-                                                                    className={`btn btn-secondary ${key === 'tab-1' ? 'disabled' : ''}`}
-                                                                    onClick={handlePrevious}
-                                                                    disabled={key === 'tab-1'}
-                                                                >
-                                                                    Back To Previous
-                                                                </button>
-                                                            </div>
-                                                            <div className="d-flex next">
-                                                                <button
-                                                                    className="btn btn-secondary mt-3 mt-md-0"
-                                                                    onClick={handleNext}
-                                                                    disabled={key === `tab-${totalTabs}`}
-                                                                >
-                                                                    Next Step
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
+                                        <div className="d-flex justify-content-center mt-30">
+                                            <div className="previous me-2">
+                                                <button
+                                                    className={`btn btn-secondary ${key === 'tab-1' ? 'disabled' : ''}`}
+                                                    onClick={handlePrevious}
+                                                    disabled={key === 'tab-1'}
+                                                >
+                                                    Volver
+                                                </button>
+                                            </div>
+                                            <div className="d-flex next">
+                                                {key === `tab-${totalTabs}` ? (
+                                                    <button
+                                                        className="btn btn-primary mt-3 mt-md-0"
+                                                        onClick={handleSubmit} // Llama al handleSubmit en la última pestaña
+                                                    >
+                                                        Finalizar
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="btn btn-secondary mt-3 mt-md-0"
+                                                        onClick={handleNext}
+                                                    >
+                                                        Siguiente Paso
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </Card>
                             </TabContainer>
